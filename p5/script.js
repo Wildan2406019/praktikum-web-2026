@@ -1,21 +1,49 @@
+
 document.addEventListener("DOMContentLoaded", () => {
     const todoForm = document.querySelector("#todoForm");
     const taskInput = document.querySelector("#taskInput");
     const inputError = document.querySelector("#inputError");
     const todoList = document.querySelector("#todoList");
+    const taskCounter = document.querySelector("#taskCounter");
+    const clearCompletedBtn = document.querySelector("#clearCompletedBtn");
 
-    const getTasks = () => JSON.parse(localStorage.getItem("todo_tasks")) || [];
+    const getTasks = () => {
+        try {
+            return JSON.parse(localStorage.getItem("todo_tasks")) || [];
+        } catch {
+            return [];
+        }
+    };
 
     const saveTasks = (tasks) => {
         localStorage.setItem("todo_tasks", JSON.stringify(tasks));
     };
 
+    const updateCounter = (tasks) => {
+        const total = tasks.length;
+        const completed = tasks.filter(task => task.completed === true).length;
+        const incomplete = total - completed;
+
+        taskCounter.textContent =
+            `Total: ${total} Tugas | Selesai: ${completed} | Belum Selesai: ${incomplete}`;
+    };
+
     const renderTasks = () => {
         const tasks = getTasks();
+
         todoList.innerHTML = "";
 
+        updateCounter(tasks);
+
         if (tasks.length === 0) {
-            todoList.innerHTML = "<li style='text-align:center; color:#64748b; font-size:13px; padding:10px;'>Belum ada tugas tersimpan.</li>";
+            const emptyMessage = document.createElement("li");
+            emptyMessage.textContent = "Belum ada tugas tersimpan.";
+            emptyMessage.style.textAlign = "center";
+            emptyMessage.style.color = "#64748b";
+            emptyMessage.style.fontSize = "13px";
+            emptyMessage.style.padding = "10px";
+
+            todoList.appendChild(emptyMessage);
             return;
         }
 
@@ -23,24 +51,37 @@ document.addEventListener("DOMContentLoaded", () => {
             const li = document.createElement("li");
             li.className = `todo-item ${task.completed ? "completed" : ""}`;
 
-            li.innerHTML = `
-                <span class="todo-text">${task.text}</span>
-                <div class="todo-actions">
-                    <button type="button" class="action-btn complete-btn" data-index="${index}">
-                        ${task.completed ? "Batal" : "Selesai"}
-                    </button>
-                    <button type="button" class="action-btn delete-btn" data-index="${index}">
-                        Hapus
-                    </button>
-                </div>
-            `;
+            const text = document.createElement("span");
+            text.className = "todo-text";
+            text.textContent = task.text;
+
+            const actions = document.createElement("div");
+            actions.className = "todo-actions";
+
+            const completeButton = document.createElement("button");
+            completeButton.type = "button";
+            completeButton.className = "action-btn complete-btn";
+            completeButton.dataset.index = index;
+            completeButton.textContent = task.completed ? "Batal" : "Selesai";
+
+            const deleteButton = document.createElement("button");
+            deleteButton.type = "button";
+            deleteButton.className = "action-btn delete-btn";
+            deleteButton.dataset.index = index;
+            deleteButton.textContent = "Hapus";
+
+            actions.appendChild(completeButton);
+            actions.appendChild(deleteButton);
+
+            li.appendChild(text);
+            li.appendChild(actions);
 
             todoList.appendChild(li);
         });
     };
 
-    todoForm.addEventListener("submit", (e) => {
-        e.preventDefault();
+    todoForm.addEventListener("submit", (event) => {
+        event.preventDefault();
 
         const taskText = taskInput.value.trim();
 
@@ -54,6 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
         inputError.style.display = "none";
 
         const tasks = getTasks();
+
         tasks.push({
             text: taskText,
             completed: false
@@ -62,11 +104,20 @@ document.addEventListener("DOMContentLoaded", () => {
         saveTasks(tasks);
 
         taskInput.value = "";
+
         renderTasks();
+        taskInput.focus();
     });
 
-    todoList.addEventListener("click", (e) => {
-        const button = e.target.closest("button");
+    taskInput.addEventListener("input", () => {
+        if (taskInput.value.trim().length >= 3) {
+            taskInput.classList.remove("error");
+            inputError.style.display = "none";
+        }
+    });
+
+    todoList.addEventListener("click", (event) => {
+        const button = event.target.closest("button");
 
         if (!button || button.dataset.index === undefined) {
             return;
@@ -75,15 +126,38 @@ document.addEventListener("DOMContentLoaded", () => {
         const index = Number(button.dataset.index);
         const tasks = getTasks();
 
+        if (!tasks[index]) {
+            return;
+        }
+
         if (button.classList.contains("complete-btn")) {
             tasks[index].completed = !tasks[index].completed;
-            saveTasks(tasks);
-            renderTasks();
-        } else if (button.classList.contains("delete-btn")) {
-            tasks.splice(index, 1);
+
             saveTasks(tasks);
             renderTasks();
         }
+
+        if (button.classList.contains("delete-btn")) {
+            const confirmed = confirm(
+                "Apakah Anda yakin ingin menghapus tugas ini?"
+            );
+
+            if (confirmed) {
+                tasks.splice(index, 1);
+
+                saveTasks(tasks);
+                renderTasks();
+            }
+        }
+    });
+
+    clearCompletedBtn.addEventListener("click", () => {
+        const tasks = getTasks();
+
+        const remainingTasks = tasks.filter(task => task.completed !== true);
+
+        saveTasks(remainingTasks);
+        renderTasks();
     });
 
     renderTasks();
