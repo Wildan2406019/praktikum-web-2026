@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRUD Mahasiswa - Modul 7</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+<main class="container">
+  <h1>Manajemen Data Mahasiswa</h1>
+  <p class="subtitle">Node.js, Express, Fetch API & MySQL Laragon</p>
+  <p class="subtitle">Wildan Sonhajul Mukarom · 2406019 · Informatika A</p>
+  <div id="alertMessage" class="alert" role="status" hidden></div>
+  <section class="card">
+    <h2 id="formTitle">Tambah Mahasiswa Baru</h2>
+    <form id="mhsForm">
+      <input type="hidden" id="mhsId">
+      <div class="form-row">
+        <label>NIM<input type="text" id="nim" maxlength="20" required placeholder="Contoh: 2406019"></label>
+        <label>Nama Lengkap<input type="text" id="nama" maxlength="100" required placeholder="Nama mahasiswa"></label>
+        <label>Program Studi<select id="jurusan" required>
+          <option value="">-- Pilih Jurusan --</option>
+          <option>Teknik Informatika</option><option>Sistem Informasi</option><option>Manajemen Informatika</option>
+        </select></label>
+        <label>Email<input type="email" id="email" maxlength="100" required placeholder="nama@kampus.ac.id"></label>
+      </div>
+      <button id="btnSubmit" type="submit" disabled>Simpan Mahasiswa</button>
+      <button id="btnCancel" type="button" class="secondary" hidden>Batal Edit</button>
+    </form>
+  </section>
+  <section class="card">
+    <h2>Daftar Mahasiswa</h2>
+    <label for="searchInput">Pencarian nama atau NIM</label>
+    <input type="text" id="searchInput" placeholder="Cari nama atau NIM...">
+    <p id="totalMahasiswa" class="counter" aria-live="polite">Memuat total mahasiswa...</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>No</th><th>NIM</th><th>Nama Lengkap</th><th>Jurusan</th><th>Email</th><th>Aksi</th></tr></thead>
+      <tbody id="mhsTableBody"><tr><td colspan="6">Memuat data...</td></tr></tbody>
+    </table></div>
+    <button id="btnReload" type="button" class="secondary">Muat Ulang Data</button>
+  </section>
+</main>
+</body>
+</html>
